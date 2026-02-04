@@ -4,6 +4,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart'; 
 
 void main() => runApp(MaterialApp(
+  title: 'Enzeiverse Engine', // Nama aplikasi di sistem
   debugShowCheckedModeBanner: false, 
   home: WebViewApp()
 ));
