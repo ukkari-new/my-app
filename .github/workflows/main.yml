@@ -1,4 +1,4 @@
-name: Build APK Ukari
+name: Build APK Enzeiverse Engine
 on: workflow_dispatch
 
 jobs:
@@ -19,20 +19,25 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create & Build Project
+      - name: Create & Patch Enzeiverse Engine
         run: |
-          # Memaksa nama project menjadi my_app agar tidak error
-          flutter create --platforms android --project-name my_app .
+          # Membuat project dengan nama paket internal enzeiverse_engine
+          flutter create --platforms android --project-name enzeiverse_engine .
           
-          # Menambahkan library WebView yang kamu butuhkan di main.dart
           flutter pub add webview_flutter
           flutter pub add webview_flutter_android
           
-          # Proses perakitan APK
-          flutter build apk --release
+          # Izin HTTP (Cleartext)
+          sed -i '/<application/s/$/ android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
+          
+          # MENGGANTI NAMA APLIKASI DI LAYAR HP (Label)
+          sed -i 's/android:label="enzeiverse_engine"/android:label="Enzeiverse Engine"/' android/app/src/main/AndroidManifest.xml
+
+      - name: Build APK
+        run: flutter build apk --release
 
       - name: Simpan Hasil APK
         uses: actions/upload-artifact@v4
         with:
-          name: APK_UKARI_OFFLINE
+          name: Enzeiverse_Engine_APK
           path: build/app/outputs/flutter-apk/app-release.apk
