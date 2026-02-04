@@ -1,0 +1,38 @@
+name: Build APK Ukari
+on: workflow_dispatch
+
+jobs:
+  pabrik_apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Create & Build Project
+        run: |
+          # Memaksa nama project menjadi my_app agar tidak error
+          flutter create --platforms android --project-name my_app .
+          
+          # Menambahkan library WebView yang kamu butuhkan di main.dart
+          flutter pub add webview_flutter
+          flutter pub add webview_flutter_android
+          
+          # Proses perakitan APK
+          flutter build apk --release
+
+      - name: Simpan Hasil APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: APK_UKARI_OFFLINE
+          path: build/app/outputs/flutter-apk/app-release.apk
