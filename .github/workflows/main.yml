@@ -21,16 +21,21 @@ jobs:
 
       - name: Create & Patch Enzeiverse Engine
         run: |
-          # Membuat project dengan nama paket internal enzeiverse_engine
+          # 1. Buat project internal
           flutter create --platforms android --project-name enzeiverse_engine .
           
+          # 2. Tambah library pendukung
           flutter pub add webview_flutter
           flutter pub add webview_flutter_android
           
-          # Izin HTTP (Cleartext)
+          # 3. Patch AndroidManifest (Izin HTTP & Network State)
+          # Mengizinkan koneksi HTTP biasa
           sed -i '/<application/s/$/ android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
           
-          # MENGGANTI NAMA APLIKASI DI LAYAR HP (Label)
+          # Menambah izin Network untuk stabilitas Cache
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"\/>' android/app/src/main/AndroidManifest.xml
+          
+          # 4. Ganti nama tampilan aplikasi di HP
           sed -i 's/android:label="enzeiverse_engine"/android:label="Enzeiverse Engine"/' android/app/src/main/AndroidManifest.xml
 
       - name: Build APK
@@ -39,5 +44,5 @@ jobs:
       - name: Simpan Hasil APK
         uses: actions/upload-artifact@v4
         with:
-          name: Enzeiverse_Engine_APK
+          name: Enzeiverse_Engine_v1
           path: build/app/outputs/flutter-apk/app-release.apk
