@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-// Tambahkan baris ini jika kamu ingin kontrol cache lebih dalam (opsional)
-import 'package:webview_flutter_android/webview_flutter_android.dart'; 
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
-void main() => runApp(MaterialApp(
-  title: 'Enzeiverse Engine', // Nama aplikasi di sistem
-  debugShowCheckedModeBanner: false, 
-  home: WebViewApp()
-));
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MaterialApp(
+    title: 'Enzeiverse Engine',
+    debugShowCheckedModeBanner: false,
+    home: WebViewApp(),
+  ));
+}
 
 class WebViewApp extends StatefulWidget {
+  const WebViewApp({super.key});
+
   @override
-  _WebViewAppState createState() => _WebViewAppState();
+  State<WebViewApp> createState() => _WebViewAppState();
 }
 
 class _WebViewAppState extends State<WebViewApp> {
@@ -21,44 +25,45 @@ class _WebViewAppState extends State<WebViewApp> {
   void initState() {
     super.initState();
     
-    // Inisialisasi Controller
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      // --- BAGIAN CACHE ---
       ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
           onWebResourceError: (error) {
-            // Jika benar-benar tidak ada cache dan internet mati, baru tampilkan ini
-            // Tapi jika ada cache, WebView biasanya akan otomatis menampilkan versi terakhir
             debugPrint("Web Error: ${error.description}");
           },
         ),
       )
-      // Link Web Panel Ptero kamu
-      ..loadRequest(Uri.parse('http://privserv.my.id:2456'));
+      // GANTI LINK DI BAWAH INI DENGAN LINK PANEL PTERO KAMU
+      ..loadRequest(Uri.parse('http://UBAH_LINK_DISINI.com'));
 
-    // --- LOGIKA AGAR TETAP TAMPIL SAAT OFFLINE ---
-    if (controller.platform is AndroidWebViewController) {
-      // Mengaktifkan penyimpanan cache di sistem Android
-      (controller.platform as AndroidWebViewController)
-          .setGeolocationEnabled(true);
+    // Optimasi Cache untuk Android agar tidak "Cache Miss"
+    final platform = controller.platform;
+    if (platform is AndroidWebViewController) {
+      platform.setGeolocationEnabled(true);
+      // Mengizinkan penyimpanan database web lokal
+      platform.setMediaPlaybackRequiresUserGesture(false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Menggunakan WillPopScope agar jika ditekan tombol back, tidak langsung keluar app
-      body: WillPopScope(
-        onWillPop: () async {
+      // WillPopScope agar tombol 'Back' di HP kembali ke halaman web sebelumnya, bukan keluar app
+      body: PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
           if (await controller.canGoBack()) {
             controller.goBack();
-            return false;
+          } else {
+            if (context.mounted) Navigator.of(context).pop();
           }
-          return true;
         },
-        child: SafeArea(child: WebViewWidget(controller: controller)),
+        child: SafeArea(
+          child: WebViewWidget(controller: controller),
+        ),
       ),
     );
   }
